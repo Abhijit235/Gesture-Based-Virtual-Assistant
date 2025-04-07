@@ -1,31 +1,34 @@
 from gtts import gTTS
-import streamlit as st
-import base64
-import os
 import tempfile
-import webbrowser
+import base64
+import streamlit as st
 
-def speak(text):
-    tts = gTTS(text=text, lang='en')
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
-        temp_path = fp.name
-        tts.save(temp_path)
-
-    # Play audio in Streamlit
-    with open(temp_path, "rb") as f:
-        audio_data = f.read()
-        b64 = base64.b64encode(audio_data).decode()
-        st.audio(f"data:audio/mp3;base64,{b64}", format="audio/mp3")
+def speak_text(text):
+    tts = gTTS(text)
+    with tempfile.NamedTemporaryFile(delete=True, suffix=".mp3") as fp:
+        tts.save(fp.name)
+        audio_file = fp.read()
+        b64 = base64.b64encode(audio_file).decode()
+        st.audio(fp.name, format='audio/mp3')
 
 def perform_action(fingers):
     if fingers == 1:
-        speak("Opening Google")
-        webbrowser.open("https://www.google.com")
+        text = "Opening Google"
+        url = "https://www.google.com"
     elif fingers == 2:
-        speak("Opening YouTube")
-        webbrowser.open("https://www.youtube.com")
+        text = "Opening GitHub"
+        url = "https://www.github.com"
     elif fingers == 3:
-        speak("Opening GitHub")
-        webbrowser.open("https://github.com")
+        text = "Opening YouTube"
+        url = "https://www.youtube.com"
     elif fingers == 5:
-        speak("Goodbye!")
+        text = "Goodbye!"
+        url = None
+    else:
+        text = "Gesture not recognized"
+        url = None
+
+    speak_text(text)
+
+    if url:
+        st.markdown(f"🔗 [Click here to open {url}]({url})", unsafe_allow_html=True)
